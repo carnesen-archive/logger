@@ -7,7 +7,7 @@
     "build:commonjs": "babel src --out-dir lib --ignore '*-test.js'",
     "build": "npm run clean && npm run build:commonjs",
     "clean": "rimraf lib",
-    "lint": "standard 'src/**/*.js'",
+    "lint": "eslint src",
     "lint:fix": "npm run lint -- --fix",
     "preversion": "npm test",
     "version": "npm run build",
@@ -24,10 +24,11 @@
     "babel-preset-es2015": "6.16.0",
     "babel-register": "6.16.3",
     "chai": "3.5.0",
+    "eslint": "3.7.1",
+    "eslint-config-carnesen": "1.0.4",
     "mocha": "3.1.2",
     "rimraf": "2.5.4",
-    "sinon": "1.17.6",
-    "standard": "8.3.0"
+    "sinon": "1.17.6"
   },
   "files": [
     "lib"
@@ -44,11 +45,5 @@
     "url": "https://github.com/carnesen/logger/issues"
   },
   "homepage": "https://github.com/carnesen/logger",
-  "license": "MIT",
-  "standard": {
-    "globals": [
-      "describe",
-      "it"
-    ]
-  }
+  "license": "MIT"
 }

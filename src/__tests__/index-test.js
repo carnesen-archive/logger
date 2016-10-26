@@ -57,6 +57,6 @@ describe(pkg.name, function () {
     const listenerApi = transport.spy.firstCall.args[0]
     listenerApi.level.should.equal('info')
     listenerApi.args.should.deep.equal(args)
-    listenerApi.timestamp.valueOf().should.be.below((new Date()).valueOf())
+    listenerApi.timestamp.valueOf().should.be.below((new Date()).valueOf() + 10)
   })
 })

@@ -45,7 +45,7 @@ export class Transport {
 
 export class ConsoleTransport extends Transport {
   write ({ args }) {
-    console.log.apply(console, ...args) // eslint-disable-line no-console
+    console.log.apply(console, args) // eslint-disable-line no-console
   }
 }
 
@@ -96,7 +96,7 @@ export class Logger {
   }
 
   inspect () {
-    const { add, pipe, debug, warn, error } = this
-    return { add, pipe, debug, warn, error }
+    const { add, pipe, debug, warn, error, listeners } = this
+    return { add, pipe, debug, warn, error, listeners }
   }
 }

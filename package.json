@@ -1,7 +1,7 @@
 {
   "name": "@carnesen/logger",
   "description": "A simple logger for Node.js and the browser",
-  "version": "0.0.1",
+  "version": "0.1.0",
   "main": "lib/index.js",
   "scripts": {
     "build:commonjs": "babel src --out-dir lib --ignore '*-test.js'",

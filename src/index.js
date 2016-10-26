@@ -1,6 +1,7 @@
 import debug from 'debug'
+import pkg from '../package.json'
 
-import { throwIfNotFunction } from '@carnesen/checks'
+const writeDebug = debug(pkg.name)
 
 const levels = ['debug', 'info', 'warn', 'error', 'none']
 
@@ -12,63 +13,90 @@ function getLevelIndex (level) {
   return levelIndex
 }
 
-export default function (name, options) {
-  options = options || {}
-
-  const _registeredLoggers = []
-  let _levelIndex = getLevelIndex(options.level || 'info')
-
-  function register (logger) {
-    throwIfNotFunction(logger)
-    _registeredLoggers.push(logger)
-    let registered = true
-    return function deregister () {
-      if (!registered) {
-        return
-      }
-      const index = _registeredLoggers.indexOf(logger)
-      _registeredLoggers.splice(index, 1)
-    }
+export class Transport {
+  constructor (options = {}) {
+    this.level = options.level || 'info'
   }
 
-  function setLevel (level) {
-    _levelIndex = getLevelIndex(level)
+  set level (level) {
+    this.levelIndex = getLevelIndex(level)
   }
 
-  const debugLogger = debug(name)
-
-  if (options.debug !== false) {
-    register(debugLogger)
+  get level () {
+    return levels[this.levelIndex]
   }
 
-  function consoleLogger (...args) {
-    const levelIndex = getLevelIndex(args[0])
-    if (levelIndex < _levelIndex) {
-      return
-    }
-    console.log(...args.splice(1)) // eslint-disable-line no-console
+  write () {
+    throw new Error('Write method must be implemented')
   }
 
-  if (options.console === true) {
-    register(consoleLogger)
+  conditionalWrite (logApi) {
+    const { level } = logApi
+    const passedLevelIndex = getLevelIndex(level)
+    if (passedLevelIndex < this.levelIndex) return
+    this.write(logApi)
   }
 
-  function _log (...args) {
-    // freeze logger array to prevent funny behavior if one deregisters mid-log
-    const currentRegisteredLoggers = [..._registeredLoggers]
-    currentRegisteredLoggers.forEach(logger => logger(...args))
+  inspect () {
+    const { level, write } = this
+    return { level, write }
+  }
+}
+
+export class ConsoleTransport extends Transport {
+  write ({ args }) {
+    console.log.apply(console, ...args) // eslint-disable-line no-console
+  }
+}
+
+export class DebugTransport extends Transport {
+  write () {
+    writeDebug(arguments)
+  }
+}
+
+export class Logger {
+  constructor (namespace) {
+    this.namespace = namespace || ''
+    this.listeners = []
   }
 
-  function log (...args) {
-    _log('info', ...args)
+  add (transport) {
+    this.listeners.push(transport.conditionalWrite.bind(transport))
   }
-  log.consoleLogger = consoleLogger
-  log.debugLogger = debugLogger
-  log.register = register
-  log.setLevel = setLevel
-  levels.forEach(level => {
-    log[level] = (...args) => _log(level, ...args)
-  })
 
-  return log
+  pipe (logger) {
+    this.listeners.push(logger._emit.bind(logger))
+  }
+
+  _emit (logApi) {
+    this.listeners.forEach(listener => listener(logApi))
+  }
+
+  _toLogApi (level, args) {
+    const timestamp = new Date()
+    const namespace = this
+    this._emit({ namespace, level, timestamp, args })
+  }
+
+  debug (...args) {
+    this._toLogApi('debug', args)
+  }
+
+  info (...args) {
+    this._toLogApi('info', args)
+  }
+
+  warn (...args) {
+    this._toLogApi('warn', args)
+  }
+
+  error (...args) {
+    this._toLogApi('error', args)
+  }
+
+  inspect () {
+    const { add, pipe, debug, warn, error } = this
+    return { add, pipe, debug, warn, error }
+  }
 }

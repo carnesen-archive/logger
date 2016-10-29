@@ -30,7 +30,7 @@ describe(pkg.name, function () {
     log.debug()
     log.info()
     log.warn()
-    log.error()
+    log.error('a message', 'another message')
     console.log.calledOnce.should.equal(true) // eslint-disable-line no-console
     console.log.restore() // eslint-disable-line no-console
   })

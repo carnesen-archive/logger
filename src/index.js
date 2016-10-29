@@ -44,8 +44,8 @@ export class Transport {
 }
 
 export class ConsoleTransport extends Transport {
-  write ({ args }) {
-    console.log.apply(console, args) // eslint-disable-line no-console
+  write ({ level, timestamp, args }) {
+    console.log(`${timestamp} : ${level} |`, ...args) // eslint-disable-line no-console
   }
 }
 
